@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rCapture</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-a: #f6efe3;
+      --bg-b: #f4d9b8;
+      --ink: #22201c;
+      --muted: #6b6358;
+      --panel: rgba(255, 255, 255, 0.74);
+      --line: rgba(34, 32, 28, 0.12);
+      --accent: #0b6e4f;
+      --accent-2: #d95f18;
+      --danger: #b3261e;
+      --radius: 18px;
+      --shadow: 0 18px 42px rgba(35, 26, 12, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 15%, rgba(217, 95, 24, 0.17), transparent 36%),
+        radial-gradient(circle at 80% 0%, rgba(11, 110, 79, 0.2), transparent 40%),
+        linear-gradient(170deg, var(--bg-a), var(--bg-b));
+      padding: 20px;
+      display: grid;
+      place-items: center;
+    }
+
+    .app {
+      width: min(920px, 100%);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: var(--panel);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: rise 420ms ease-out both;
+    }
+
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .head {
+      padding: 24px 22px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      background: rgba(11, 110, 79, 0.12);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      line-height: 1.06;
+      font-size: clamp(1.6rem, 2.5vw, 2.3rem);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+    }
+
+    .mode-switch {
+      margin-top: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .mode-btn {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 130ms ease, border-color 130ms ease, background 130ms ease;
+    }
+
+    .mode-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(11, 110, 79, 0.4);
+    }
+
+    .mode-btn.active {
+      border-color: transparent;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #0f8e67);
+    }
+
+    .content {
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.8);
+      padding: 16px;
+    }
+
+    .panel-title {
+      margin: 0 0 10px;
+      font-size: 1.15rem;
+    }
+
+    .panel-text {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    button,
+    input[type="file"] {
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #0f8e67);
+      cursor: pointer;
+      transition: transform 130ms ease, filter 130ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      transform: none;
+      filter: none;
+    }
+
+    .secondary {
+      background: linear-gradient(135deg, var(--accent-2), #ef7f3b);
+    }
+
+    .media-box {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 14px;
+      border: 1px dashed var(--line);
+      background: #fff;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+    }
+
+    video,
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .status {
+      margin-top: 10px;
+      min-height: 22px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .status.error {
+      color: var(--danger);
+      font-weight: 500;
+    }
+
+    .status.ok {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 12px;
+      }
+
+      .head,
+      .content {
+        padding: 16px;
+      }
+
+      .media-box {
+        aspect-ratio: 3 / 4;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" role="main">
+    <header class="head">
+      <span class="badge">rCapture</span>
+      <h1>rCapture - mobile or desktop</h1>
+      <p class="subtitle" id="modeSummary">Choose a mode to begin.</p>
+      <div class="mode-switch" role="group" aria-label="Mode switch">
+        <button class="mode-btn" id="autoModeBtn" type="button">Auto Detect</button>
+        <button class="mode-btn" id="cameraModeBtn" type="button">Use Camera</button>
+        <button class="mode-btn" id="uploadModeBtn" type="button">Use Upload</button>
+      </div>
+    </header>
+
+    <section class="content">
+      <article class="panel hidden" id="mobilePanel" aria-live="polite">
+        <h2 class="panel-title">Camera mode: live preview</h2>
+        <p class="panel-text">Tap enable to request camera + microphone permissions and start the preview.</p>
+
+        <div class="controls">
+          <button id="enableMediaBtn" type="button">Start Live Scan</button>
+          <button id="stopMediaBtn" class="secondary hidden" type="button">Stop Scan</button>
+        </div>
+
+        <div class="media-box">
+          <video id="cameraPreview" autoplay playsinline muted class="hidden"></video>
+          <span id="cameraPlaceholder">Camera preview will appear here</span>
+        </div>
+        <p id="mobileStatus" class="status"></p>
+      </article>
+
+      <article class="panel hidden" id="desktopPanel" aria-live="polite">
+        <h2 class="panel-title">Upload mode: image preview</h2>
+        <p class="panel-text">Select an image file to preview it in the page.</p>
+
+        <div class="controls">
+          <input id="imageInput" type="file" accept="image/*" />
+        </div>
+
+        <div class="media-box">
+          <img id="imagePreview" alt="Uploaded receipt preview" class="hidden" />
+          <span id="uploadPlaceholder">No image selected yet</span>
+        </div>
+        <p id="desktopStatus" class="status"></p>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      const modeSummary = document.getElementById("modeSummary");
+      const mobilePanel = document.getElementById("mobilePanel");
+      const desktopPanel = document.getElementById("desktopPanel");
+      const autoModeBtn = document.getElementById("autoModeBtn");
+      const cameraModeBtn = document.getElementById("cameraModeBtn");
+      const uploadModeBtn = document.getElementById("uploadModeBtn");
+
+      const enableMediaBtn = document.getElementById("enableMediaBtn");
+      const stopMediaBtn = document.getElementById("stopMediaBtn");
+      const cameraPreview = document.getElementById("cameraPreview");
+      const cameraPlaceholder = document.getElementById("cameraPlaceholder");
+      const mobileStatus = document.getElementById("mobileStatus");
+
+      const imageInput = document.getElementById("imageInput");
+      const imagePreview = document.getElementById("imagePreview");
+      const uploadPlaceholder = document.getElementById("uploadPlaceholder");
+      const desktopStatus = document.getElementById("desktopStatus");
+
+      let activeStream = null;
+      let activePreviewUrl = null;
+      let currentMode = "auto";
+      const MODE_STORAGE_KEY = "receiptCapture.selectedMode";
+
+      function setStatus(target, message, tone) {
+        target.textContent = message;
+        target.className = "status";
+        if (tone) target.classList.add(tone);
+      }
+
+      function saveModePreference(mode) {
+        try {
+          localStorage.setItem(MODE_STORAGE_KEY, mode);
+        } catch (_) {
+          // Ignore storage write failures (private mode or restricted storage).
+        }
+      }
+
+      function loadModePreference() {
+        try {
+          const stored = localStorage.getItem(MODE_STORAGE_KEY);
+          if (stored === "auto" || stored === "camera" || stored === "upload") {
+            return stored;
+          }
+        } catch (_) {
+          // Ignore storage read failures and use auto mode.
+        }
+
+        return "auto";
+      }
+
+      function isLikelyMobile() {
+        const mediaCapable = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+        const uaMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|BlackBerry|webOS/i.test(navigator.userAgent);
+        const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+        const narrowViewport = window.matchMedia("(max-width: 920px)").matches;
+
+        // Capability-first with heuristics fallback: mobile mode only when media API exists
+        // and either user-agent or touch-like viewport hints indicate a phone/tablet.
+        return mediaCapable && (uaMobile || (coarsePointer && narrowViewport));
+      }
+
+      function stopMediaStream() {
+        if (!activeStream) return;
+        activeStream.getTracks().forEach((track) => track.stop());
+        activeStream = null;
+      }
+
+      function resetMobilePreview() {
+        stopMediaStream();
+        cameraPreview.srcObject = null;
+        cameraPreview.classList.add("hidden");
+        cameraPlaceholder.classList.remove("hidden");
+        stopMediaBtn.classList.add("hidden");
+      }
+
+      async function startMediaStream() {
+        setStatus(mobileStatus, "Requesting camera and microphone permissions...");
+        enableMediaBtn.disabled = true;
+
+        const preferredConstraints = { video: { facingMode: { ideal: "environment" } }, audio: true };
+        const fallbackConstraints = { video: true, audio: true };
+
+        try {
+          let stream;
+          try {
+            stream = await navigator.mediaDevices.getUserMedia(preferredConstraints);
+          } catch (_) {
+            stream = await navigator.mediaDevices.getUserMedia(fallbackConstraints);
+          }
+
+          activeStream = stream;
+          cameraPreview.srcObject = stream;
+          cameraPreview.classList.remove("hidden");
+          cameraPlaceholder.classList.add("hidden");
+          stopMediaBtn.classList.remove("hidden");
+          setStatus(mobileStatus, "Camera and microphone are active.", "ok");
+        } catch (error) {
+          let message = "Could not access camera/microphone.";
+          if (error && error.name === "NotAllowedError") {
+            message = "Permission denied. Allow camera/microphone access and try again.";
+          } else if (error && error.name === "NotFoundError") {
+            message = "No camera or microphone device was found on this device.";
+          } else if (error && error.name === "NotReadableError") {
+            message = "Camera or microphone is already in use by another app.";
+          } else if (error && error.name === "SecurityError") {
+            message = "Use HTTPS or localhost to access camera and microphone.";
+          }
+          setStatus(mobileStatus, message, "error");
+        } finally {
+          enableMediaBtn.disabled = false;
+        }
+      }
+
+      function setModeButtons(mode) {
+        autoModeBtn.classList.toggle("active", mode === "auto");
+        cameraModeBtn.classList.toggle("active", mode === "camera");
+        uploadModeBtn.classList.toggle("active", mode === "upload");
+      }
+
+      function setModeUI(mobileMode) {
+        if (mobileMode) {
+          mobilePanel.classList.remove("hidden");
+          desktopPanel.classList.add("hidden");
+          if (currentMode === "auto") {
+            modeSummary.textContent = "Mobile mode detected. Camera + microphone access is available on button tap.";
+          } else {
+            modeSummary.textContent = "Camera mode selected. Tap enable to request camera + microphone.";
+          }
+        } else {
+          resetMobilePreview();
+          mobilePanel.classList.add("hidden");
+          desktopPanel.classList.remove("hidden");
+          if (currentMode === "auto") {
+            modeSummary.textContent = "Desktop mode detected. Upload an image file to preview it.";
+          } else {
+            modeSummary.textContent = "Upload mode selected. Choose an image to preview it.";
+          }
+        }
+      }
+
+      function applyMode(mode) {
+        currentMode = mode;
+        setModeButtons(mode);
+        saveModePreference(mode);
+
+        if (mode === "camera") {
+          setModeUI(true);
+          return;
+        }
+
+        if (mode === "upload") {
+          setModeUI(false);
+          return;
+        }
+
+        setModeUI(isLikelyMobile());
+      }
+
+      function initDesktopUpload() {
+        imageInput.addEventListener("change", function onFileChange(event) {
+          const file = event.target.files && event.target.files[0];
+          if (!file) {
+            setStatus(desktopStatus, "No file selected.");
+            return;
+          }
+
+          if (!file.type.startsWith("image/")) {
+            setStatus(desktopStatus, "Please choose an image file.", "error");
+            imageInput.value = "";
+            return;
+          }
+
+          if (activePreviewUrl) {
+            URL.revokeObjectURL(activePreviewUrl);
+          }
+
+          activePreviewUrl = URL.createObjectURL(file);
+          imagePreview.src = activePreviewUrl;
+          imagePreview.classList.remove("hidden");
+          uploadPlaceholder.classList.add("hidden");
+          setStatus(desktopStatus, "Image loaded successfully.", "ok");
+        });
+      }
+
+      enableMediaBtn.addEventListener("click", startMediaStream);
+
+      autoModeBtn.addEventListener("click", function onAutoMode() {
+        applyMode("auto");
+      });
+
+      cameraModeBtn.addEventListener("click", function onCameraMode() {
+        applyMode("camera");
+      });
+
+      uploadModeBtn.addEventListener("click", function onUploadMode() {
+        applyMode("upload");
+      });
+
+      stopMediaBtn.addEventListener("click", function onStop() {
+        resetMobilePreview();
+        setStatus(mobileStatus, "Media stream stopped.");
+      });
+
+      document.addEventListener("visibilitychange", function onVisibilityChange() {
+        if (document.visibilityState === "hidden") {
+          stopMediaStream();
+        }
+      });
+
+      window.addEventListener("pagehide", function onPageHide() {
+        stopMediaStream();
+        if (activePreviewUrl) {
+          URL.revokeObjectURL(activePreviewUrl);
+          activePreviewUrl = null;
+        }
+      });
+
+      applyMode(loadModePreference());
+      initDesktopUpload();
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setStatus(mobileStatus, "This browser does not support camera/microphone access.", "error");
+      }
+    })();
+  </script>
+</body>
+</html>
