@@ -103,35 +103,6 @@
       font-size: 0.98rem;
     }
 
-    .mode-switch {
-      margin-top: 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-    }
-
-    .mode-btn {
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, 0.78);
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 8px 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 130ms ease, border-color 130ms ease, background 130ms ease;
-    }
-
-    .mode-btn:hover {
-      transform: translateY(-1px);
-      border-color: rgba(11, 110, 79, 0.4);
-    }
-
-    .mode-btn.active {
-      border-color: transparent;
-      color: #fff;
-      background: linear-gradient(135deg, var(--accent), #0f8e67);
-    }
-
     .content {
       padding: 22px;
       display: grid;
@@ -233,27 +204,6 @@
       font-weight: 500;
     }
 
-    .dl-btn {
-      display: inline-flex;
-      align-items: center;
-      border: 0;
-      border-radius: 12px;
-      padding: 10px 14px;
-      font-family: inherit;
-      font-size: 0.95rem;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, var(--accent), #0f8e67);
-      cursor: pointer;
-      text-decoration: none;
-      transition: transform 130ms ease, filter 130ms ease;
-    }
-
-    .dl-btn:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.06);
-    }
-
     .ocr-panel {
       margin-top: 14px;
       border: 1px solid var(--line);
@@ -287,6 +237,12 @@
       margin: 0;
     }
 
+    .ocr-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -312,7 +268,7 @@
     <section class="content">
       <article class="panel hidden" id="mobilePanel" aria-live="polite">
         <h2 class="panel-title">Camera mode: live preview</h2>
-        <p class="panel-text">Tap enable to request camera + microphone permissions and start the preview.</p>
+        <p class="panel-text">Tap start, capture your receipt image, and text extraction will run automatically.</p>
 
         <div class="media-box">
           <video id="cameraPreview" autoplay playsinline muted class="hidden"></video>
@@ -328,16 +284,8 @@
             <img id="snapshotPreview" alt="Captured snapshot" />
           </div>
           <div class="controls" style="margin-top:10px;margin-bottom:0;">
-            <a id="downloadLink" class="dl-btn" download="rcapture-snapshot.png">Download Image</a>
-            <button id="mobileOcrBtn" class="hidden" type="button">Extract Text</button>
-            <button id="clearSnapshotBtn" class="secondary" type="button">Clear Snapshot</button>
+            <button id="captureAnotherBtn" class="secondary" type="button">Capture Another</button>
           </div>
-        </div>
-
-        <div id="mobileOcrPanel" class="ocr-panel hidden">
-          <h3>Extracted text</h3>
-          <p id="mobileOcrProgress" class="ocr-progress hidden"></p>
-          <pre id="mobileOcrOutput" class="ocr-output hidden"></pre>
         </div>
 
         <p id="mobileStatus" class="status"></p>
@@ -345,13 +293,12 @@
         <div class="controls">
           <button id="enableMediaBtn" type="button">Start Live Scan</button>
           <button id="captureBtn" class="hidden" type="button">Capture Image</button>
-          <button id="stopMediaBtn" class="secondary hidden" type="button">Stop Scan</button>
         </div>
       </article>
 
       <article class="panel hidden" id="desktopPanel" aria-live="polite">
         <h2 class="panel-title">Upload mode: image preview</h2>
-        <p class="panel-text">Select an image file to preview it in the page.</p>
+        <p class="panel-text">Select an image file and text extraction will run automatically.</p>
 
         <div class="controls">
           <input id="imageInput" type="file" accept="image/*" />
@@ -362,29 +309,23 @@
           <span id="uploadPlaceholder">No image selected yet</span>
         </div>
 
-        <div id="desktopOcrControls" class="controls hidden" style="margin-top:10px;margin-bottom:0;">
-          <button id="desktopOcrBtn" type="button">Extract Text</button>
-        </div>
-
-        <div id="desktopOcrPanel" class="ocr-panel hidden">
-          <h3>Extracted text</h3>
-          <p id="desktopOcrProgress" class="ocr-progress hidden"></p>
-          <pre id="desktopOcrOutput" class="ocr-output hidden"></pre>
-        </div>
-
         <p id="desktopStatus" class="status"></p>
+      </article>
+
+      <article id="sharedOcrPanel" class="panel ocr-panel hidden" aria-live="polite">
+        <h3>Extracted text</h3>
+        <p id="sharedOcrProgress" class="ocr-progress hidden"></p>
+        <pre id="sharedOcrOutput" class="ocr-output hidden"></pre>
+        <div class="ocr-actions">
+          <button id="copyTextBtn" class="secondary hidden" type="button">Copy Text</button>
+        </div>
       </article>
     </section>
 
     <header class="head">
       <span class="badge">rCapture</span>
-      <h1>rCapture - mobile or desktop</h1>
-      <p class="subtitle" id="modeSummary">Choose a mode to begin.</p>
-      <div class="mode-switch" role="group" aria-label="Mode switch">
-        <button class="mode-btn" id="autoModeBtn" type="button">Auto Detect</button>
-        <button class="mode-btn" id="cameraModeBtn" type="button">Use Camera</button>
-        <button class="mode-btn" id="uploadModeBtn" type="button">Use Upload</button>
-      </div>
+      <h1>Extract Text From Receipts</h1>
+      <p class="subtitle" id="modeSummary">Upload or capture an image and OCR runs automatically.</p>
     </header>
   </main>
 
@@ -393,29 +334,20 @@
       const modeSummary = document.getElementById("modeSummary");
       const mobilePanel = document.getElementById("mobilePanel");
       const desktopPanel = document.getElementById("desktopPanel");
-      const autoModeBtn = document.getElementById("autoModeBtn");
-      const cameraModeBtn = document.getElementById("cameraModeBtn");
-      const uploadModeBtn = document.getElementById("uploadModeBtn");
 
       const enableMediaBtn = document.getElementById("enableMediaBtn");
       const captureBtn = document.getElementById("captureBtn");
-      const stopMediaBtn = document.getElementById("stopMediaBtn");
       const cameraPreview = document.getElementById("cameraPreview");
       const cameraPlaceholder = document.getElementById("cameraPlaceholder");
       const mobileStatus = document.getElementById("mobileStatus");
       const captureCanvas = document.getElementById("captureCanvas");
       const snapshotSection = document.getElementById("snapshotSection");
       const snapshotPreview = document.getElementById("snapshotPreview");
-      const downloadLink = document.getElementById("downloadLink");
-      const clearSnapshotBtn = document.getElementById("clearSnapshotBtn");
-      const mobileOcrBtn = document.getElementById("mobileOcrBtn");
-      const mobileOcrPanel = document.getElementById("mobileOcrPanel");
-      const mobileOcrProgress = document.getElementById("mobileOcrProgress");
-      const mobileOcrOutput = document.getElementById("mobileOcrOutput");
-      const desktopOcrControls = document.getElementById("desktopOcrControls");
-      const desktopOcrPanel = document.getElementById("desktopOcrPanel");
-      const desktopOcrProgress = document.getElementById("desktopOcrProgress");
-      const desktopOcrOutput = document.getElementById("desktopOcrOutput");
+      const captureAnotherBtn = document.getElementById("captureAnotherBtn");
+      const sharedOcrPanel = document.getElementById("sharedOcrPanel");
+      const sharedOcrProgress = document.getElementById("sharedOcrProgress");
+      const sharedOcrOutput = document.getElementById("sharedOcrOutput");
+      const copyTextBtn = document.getElementById("copyTextBtn");
 
       const imageInput = document.getElementById("imageInput");
       const imagePreview = document.getElementById("imagePreview");
@@ -424,8 +356,7 @@
 
       let activeStream = null;
       let activePreviewUrl = null;
-      let currentMode = "auto";
-      const MODE_STORAGE_KEY = "receiptCapture.selectedMode";
+      let ocrRunId = 0;
 
       function setStatus(target, message, tone) {
         target.textContent = message;
@@ -433,25 +364,16 @@
         if (tone) target.classList.add(tone);
       }
 
-      function saveModePreference(mode) {
-        try {
-          localStorage.setItem(MODE_STORAGE_KEY, mode);
-        } catch (_) {
-          // Ignore storage write failures (private mode or restricted storage).
-        }
+      function getVisibleStatusTarget() {
+        return mobilePanel.classList.contains("hidden") ? desktopStatus : mobileStatus;
       }
 
-      function loadModePreference() {
-        try {
-          const stored = localStorage.getItem(MODE_STORAGE_KEY);
-          if (stored === "auto" || stored === "camera" || stored === "upload") {
-            return stored;
-          }
-        } catch (_) {
-          // Ignore storage read failures and use auto mode.
-        }
-
-        return "auto";
+      function resetSharedOcrPanel() {
+        sharedOcrPanel.classList.add("hidden");
+        sharedOcrProgress.classList.add("hidden");
+        sharedOcrOutput.classList.add("hidden");
+        sharedOcrOutput.textContent = "";
+        copyTextBtn.classList.add("hidden");
       }
 
       function isLikelyMobile() {
@@ -477,7 +399,6 @@
         cameraPreview.classList.add("hidden");
         cameraPlaceholder.classList.remove("hidden");
         captureBtn.classList.add("hidden");
-        stopMediaBtn.classList.add("hidden");
       }
 
       function captureSnapshot() {
@@ -488,15 +409,22 @@
         ctx.drawImage(cameraPreview, 0, 0, captureCanvas.width, captureCanvas.height);
         const dataUrl = captureCanvas.toDataURL("image/png");
         snapshotPreview.src = dataUrl;
-        downloadLink.href = dataUrl;
         snapshotSection.classList.remove("hidden");
-        mobileOcrBtn.classList.remove("hidden");
-        mobileOcrPanel.classList.add("hidden");
-        mobileOcrOutput.textContent = "";
-        setStatus(mobileStatus, "Image captured! You can download it below.", "ok");
+        stopMediaStream();
+        cameraPreview.srcObject = null;
+        cameraPreview.classList.add("hidden");
+        cameraPlaceholder.classList.remove("hidden");
+        captureBtn.classList.add("hidden");
+        setStatus(mobileStatus, "Image captured. Extracting text...", "ok");
+        runOCR(snapshotPreview);
       }
 
       async function startMediaStream() {
+        if (activeStream) {
+          setStatus(mobileStatus, "Camera is already active.", "ok");
+          return;
+        }
+
         setStatus(mobileStatus, "Requesting camera and microphone permissions...");
         enableMediaBtn.disabled = true;
 
@@ -516,7 +444,6 @@
           cameraPreview.classList.remove("hidden");
           cameraPlaceholder.classList.add("hidden");
           captureBtn.classList.remove("hidden");
-          stopMediaBtn.classList.remove("hidden");
           setStatus(mobileStatus, "Camera and microphone are active.", "ok");
         } catch (error) {
           let message = "Could not access camera/microphone.";
@@ -535,48 +462,22 @@
         }
       }
 
-      function setModeButtons(mode) {
-        autoModeBtn.classList.toggle("active", mode === "auto");
-        cameraModeBtn.classList.toggle("active", mode === "camera");
-        uploadModeBtn.classList.toggle("active", mode === "upload");
-      }
-
       function setModeUI(mobileMode) {
         if (mobileMode) {
           mobilePanel.classList.remove("hidden");
           desktopPanel.classList.add("hidden");
-          if (currentMode === "auto") {
-            modeSummary.textContent = "Mobile mode detected. Camera + microphone access is available on button tap.";
-          } else {
-            modeSummary.textContent = "Camera mode selected. Tap enable to request camera + microphone.";
-          }
+          modeSummary.textContent = "Mobile mode detected. Start live scan, capture, then extract text.";
+          resetSharedOcrPanel();
         } else {
           resetMobilePreview();
           mobilePanel.classList.add("hidden");
           desktopPanel.classList.remove("hidden");
-          if (currentMode === "auto") {
-            modeSummary.textContent = "Desktop mode detected. Upload an image file to preview it.";
-          } else {
-            modeSummary.textContent = "Upload mode selected. Choose an image to preview it.";
-          }
+          modeSummary.textContent = "Desktop mode detected. Upload a receipt image, then extract text.";
+          resetSharedOcrPanel();
         }
       }
 
-      function applyMode(mode) {
-        currentMode = mode;
-        setModeButtons(mode);
-        saveModePreference(mode);
-
-        if (mode === "camera") {
-          setModeUI(true);
-          return;
-        }
-
-        if (mode === "upload") {
-          setModeUI(false);
-          return;
-        }
-
+      function applyMode() {
         setModeUI(isLikelyMobile());
       }
 
@@ -602,10 +503,8 @@
           imagePreview.src = activePreviewUrl;
           imagePreview.classList.remove("hidden");
           uploadPlaceholder.classList.add("hidden");
-          desktopOcrControls.classList.remove("hidden");
-          desktopOcrPanel.classList.add("hidden");
-          desktopOcrOutput.textContent = "";
-          setStatus(desktopStatus, "Image loaded successfully.", "ok");
+          setStatus(desktopStatus, "Image loaded. Extracting text...", "ok");
+          runOCR(imagePreview);
         });
       }
 
@@ -613,69 +512,63 @@
 
       captureBtn.addEventListener("click", captureSnapshot);
 
-      clearSnapshotBtn.addEventListener("click", function onClearSnapshot() {
+      captureAnotherBtn.addEventListener("click", function onCaptureAnother() {
         snapshotPreview.src = "";
-        downloadLink.href = "";
         snapshotSection.classList.add("hidden");
-        mobileOcrBtn.classList.add("hidden");
-        mobileOcrPanel.classList.add("hidden");
-        mobileOcrOutput.textContent = "";
-        setStatus(mobileStatus, "");
+        resetSharedOcrPanel();
+        setStatus(mobileStatus, activeStream ? "Ready for another capture." : "Tap Start Live Scan to capture another image.");
       });
 
-      async function runOCR(imgEl, progressEl, outputEl, btn) {
-        btn.disabled = true;
-        progressEl.textContent = "Loading OCR engine\u2026";
-        progressEl.classList.remove("hidden");
-        outputEl.classList.add("hidden");
-        outputEl.textContent = "";
+      copyTextBtn.addEventListener("click", async function onCopyText() {
+        const text = sharedOcrOutput.textContent.trim();
+        if (!text) return;
+
+        const statusTarget = getVisibleStatusTarget();
+        try {
+          await navigator.clipboard.writeText(text);
+          setStatus(statusTarget, "Text copied to clipboard.", "ok");
+        } catch (_) {
+          setStatus(statusTarget, "Copy failed. You can still select and copy text manually.", "error");
+        }
+      });
+
+      async function runOCR(imgEl) {
+        ocrRunId += 1;
+        const runId = ocrRunId;
+        const statusTarget = getVisibleStatusTarget();
+
+        sharedOcrPanel.classList.remove("hidden");
+        sharedOcrProgress.textContent = "Loading OCR engine\u2026";
+        sharedOcrProgress.classList.remove("hidden");
+        sharedOcrOutput.classList.add("hidden");
+        sharedOcrOutput.textContent = "";
+        copyTextBtn.classList.add("hidden");
+
         try {
           const worker = await Tesseract.createWorker("eng", 1, {
             logger: function (m) {
-              if (m.status === "recognizing text") {
-                progressEl.textContent = "Recognising\u2026 " + Math.round(m.progress * 100) + "%";
+              if (m.status === "recognizing text" && runId === ocrRunId) {
+                sharedOcrProgress.textContent = "Recognising\u2026 " + Math.round(m.progress * 100) + "%";
               }
             }
           });
           const result = await worker.recognize(imgEl);
           await worker.terminate();
+
+          if (runId !== ocrRunId) return;
+
           const text = result.data.text.trim();
-          outputEl.textContent = text || "No text detected in this image.";
-          outputEl.classList.remove("hidden");
-          progressEl.classList.add("hidden");
+          sharedOcrOutput.textContent = text || "No text detected in this image.";
+          sharedOcrOutput.classList.remove("hidden");
+          sharedOcrProgress.classList.add("hidden");
+          copyTextBtn.classList.remove("hidden");
+          setStatus(statusTarget, text ? "Text extracted successfully." : "No text detected in this image.", text ? "ok" : undefined);
         } catch (_) {
-          progressEl.textContent = "OCR failed. Check image quality and try again.";
-        } finally {
-          btn.disabled = false;
+          if (runId !== ocrRunId) return;
+          sharedOcrProgress.textContent = "OCR failed. Check image quality and try again.";
+          setStatus(statusTarget, "OCR failed. Check image quality and try again.", "error");
         }
       }
-
-      mobileOcrBtn.addEventListener("click", function onMobileOcr() {
-        mobileOcrPanel.classList.remove("hidden");
-        runOCR(snapshotPreview, mobileOcrProgress, mobileOcrOutput, mobileOcrBtn);
-      });
-
-      desktopOcrBtn.addEventListener("click", function onDesktopOcr() {
-        desktopOcrPanel.classList.remove("hidden");
-        runOCR(imagePreview, desktopOcrProgress, desktopOcrOutput, desktopOcrBtn);
-      });
-
-      autoModeBtn.addEventListener("click", function onAutoMode() {
-        applyMode("auto");
-      });
-
-      cameraModeBtn.addEventListener("click", function onCameraMode() {
-        applyMode("camera");
-      });
-
-      uploadModeBtn.addEventListener("click", function onUploadMode() {
-        applyMode("upload");
-      });
-
-      stopMediaBtn.addEventListener("click", function onStop() {
-        resetMobilePreview();
-        setStatus(mobileStatus, "Media stream stopped.");
-      });
 
       document.addEventListener("visibilitychange", function onVisibilityChange() {
         if (document.visibilityState === "hidden") {
@@ -691,7 +584,7 @@
         }
       });
 
-      applyMode(loadModePreference());
+      applyMode();
       initDesktopUpload();
 
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {

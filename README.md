@@ -9,8 +9,7 @@ rCapture is a single-page web app that adapts capture behavior by context:
 
 - **Adaptive mode selection**
   - Capability-first auto-detect (checks `getUserMedia` support, touch pointer, UA, and viewport).
-  - Manual override buttons: Auto Detect, Use Camera, Use Upload.
-  - Selected mode persists across sessions via `localStorage`.
+  - Camera-first on likely mobile devices and upload-first on desktop contexts.
 
 - **Mobile camera + microphone flow**
   - Permissions requested only on explicit button tap (reliable on Safari and Chrome mobile).
@@ -18,29 +17,30 @@ rCapture is a single-page web app that adapts capture behavior by context:
   - Live camera feed rendered in a `<video>` element with `playsinline` and `muted` for autoplay stability.
   - Clear in-page error messages for: permission denied, device not found, device in use, insecure origin.
 
-- **Image capture and download**
+- **Image capture flow**
   - Capture Image button appears once the stream is active.
   - Snapshots the current video frame onto an off-screen `<canvas>` and exports as PNG.
   - Captured image displayed below the live feed for review.
-  - Download Image link saves the PNG directly to the device.
-  - Clear Snapshot button dismisses the captured image.
+  - OCR starts automatically after capture.
+  - Capture Another resets the captured image and OCR output for the next receipt.
 
 - **Desktop upload flow**
   - `<input type="file" accept="image/*">` for selecting local image files.
   - Instant in-page preview using `URL.createObjectURL()`.
+  - OCR starts automatically after a valid image is selected.
   - Validates file type before preview; rejects non-image files with an error message.
 
 - **OCR text extraction (both flows)**
   - Powered by [Tesseract.js v5](https://github.com/naptha/tesseract.js) — runs entirely in the browser, no server or API key needed.
-  - Mobile: Extract Text button appears after capturing a snapshot; resets when the snapshot is cleared.
-  - Desktop: Extract Text button appears after an image file is loaded; resets on new file selection.
+  - Mobile: OCR runs immediately after capture and stops the live stream before processing.
+  - Desktop: OCR runs immediately after an image file is loaded.
   - Live progress percentage shown while the OCR engine processes the image.
-  - Extracted text displayed in a scrollable monospace panel.
+  - Extracted text displayed in a shared scrollable monospace panel with a Copy Text action.
   - OCR engine (~10 MB) is downloaded on first use and cached by the browser.
   - Accuracy depends on image clarity — works best on clear, straight, well-lit receipt photos.
 
 - **Session safety and resource cleanup**
-  - Active media tracks stopped on page hide, `pagehide`, and mode switch away from camera.
+  - Active media tracks stopped on page hide and `pagehide`.
   - Object URLs revoked on file change and page unload to prevent memory leaks.
 
 ## Tech Stack
