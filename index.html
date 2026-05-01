@@ -300,27 +300,10 @@
 </head>
 <body>
   <main class="app" role="main">
-    <header class="head">
-      <span class="badge">rCapture</span>
-      <h1>rCapture - mobile or desktop</h1>
-      <p class="subtitle" id="modeSummary">Choose a mode to begin.</p>
-      <div class="mode-switch" role="group" aria-label="Mode switch">
-        <button class="mode-btn" id="autoModeBtn" type="button">Auto Detect</button>
-        <button class="mode-btn" id="cameraModeBtn" type="button">Use Camera</button>
-        <button class="mode-btn" id="uploadModeBtn" type="button">Use Upload</button>
-      </div>
-    </header>
-
     <section class="content">
       <article class="panel hidden" id="mobilePanel" aria-live="polite">
         <h2 class="panel-title">Camera mode: live preview</h2>
         <p class="panel-text">Tap enable to request camera + microphone permissions and start the preview.</p>
-
-        <div class="controls">
-          <button id="enableMediaBtn" type="button">Start Live Scan</button>
-          <button id="captureBtn" class="hidden" type="button">Capture Image</button>
-          <button id="stopMediaBtn" class="secondary hidden" type="button">Stop Scan</button>
-        </div>
 
         <div class="media-box">
           <video id="cameraPreview" autoplay playsinline muted class="hidden"></video>
@@ -349,6 +332,12 @@
         </div>
 
         <p id="mobileStatus" class="status"></p>
+
+        <div class="controls">
+          <button id="enableMediaBtn" type="button">Start Live Scan</button>
+          <button id="captureBtn" class="hidden" type="button">Capture Image</button>
+          <button id="stopMediaBtn" class="secondary hidden" type="button">Stop Scan</button>
+        </div>
       </article>
 
       <article class="panel hidden" id="desktopPanel" aria-live="polite">
@@ -377,6 +366,17 @@
         <p id="desktopStatus" class="status"></p>
       </article>
     </section>
+
+    <header class="head">
+      <span class="badge">rCapture</span>
+      <h1>rCapture - mobile or desktop</h1>
+      <p class="subtitle" id="modeSummary">Choose a mode to begin.</p>
+      <div class="mode-switch" role="group" aria-label="Mode switch">
+        <button class="mode-btn" id="autoModeBtn" type="button">Auto Detect</button>
+        <button class="mode-btn" id="cameraModeBtn" type="button">Use Camera</button>
+        <button class="mode-btn" id="uploadModeBtn" type="button">Use Upload</button>
+      </div>
+    </header>
   </main>
 
   <script>
