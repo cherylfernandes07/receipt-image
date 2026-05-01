@@ -2,8 +2,8 @@
 
 rCapture is a single-page web app that adapts capture behavior by context:
 
-- On likely mobile devices, it offers live camera preview with microphone permission support.
-- On desktop/web contexts, it provides image file upload with instant preview.
+- On likely mobile devices, it offers live camera preview, image capture, and in-browser OCR text extraction.
+- On desktop/web contexts, it provides image file upload, instant preview, and in-browser OCR text extraction.
 
 ## Features
 
@@ -30,6 +30,15 @@ rCapture is a single-page web app that adapts capture behavior by context:
   - Instant in-page preview using `URL.createObjectURL()`.
   - Validates file type before preview; rejects non-image files with an error message.
 
+- **OCR text extraction (both flows)**
+  - Powered by [Tesseract.js v5](https://github.com/naptha/tesseract.js) — runs entirely in the browser, no server or API key needed.
+  - Mobile: Extract Text button appears after capturing a snapshot; resets when the snapshot is cleared.
+  - Desktop: Extract Text button appears after an image file is loaded; resets on new file selection.
+  - Live progress percentage shown while the OCR engine processes the image.
+  - Extracted text displayed in a scrollable monospace panel.
+  - OCR engine (~10 MB) is downloaded on first use and cached by the browser.
+  - Accuracy depends on image clarity — works best on clear, straight, well-lit receipt photos.
+
 - **Session safety and resource cleanup**
   - Active media tracks stopped on page hide, `pagehide`, and mode switch away from camera.
   - Object URLs revoked on file change and page unload to prevent memory leaks.
@@ -38,6 +47,7 @@ rCapture is a single-page web app that adapts capture behavior by context:
 
 - Plain HTML, CSS, and vanilla JavaScript
 - No frameworks
+- [Tesseract.js v5](https://github.com/naptha/tesseract.js) via CDN for in-browser OCR
 - Single file app entry: `index.html`
 
 ## How to Run

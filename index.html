@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <style>
     :root {
       --bg-a: #f6efe3;
@@ -244,6 +245,39 @@
       filter: brightness(1.06);
     }
 
+    .ocr-panel {
+      margin-top: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 14px;
+    }
+
+    .ocr-panel h3 {
+      margin: 0 0 8px;
+      font-size: 1rem;
+    }
+
+    .ocr-progress {
+      margin: 0 0 8px;
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .ocr-output {
+      white-space: pre-wrap;
+      font-family: "Courier New", monospace;
+      font-size: 0.88rem;
+      color: var(--ink);
+      background: #f8f4ec;
+      border-radius: 8px;
+      padding: 10px 12px;
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid var(--line);
+      margin: 0;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -303,8 +337,15 @@
           </div>
           <div class="controls" style="margin-top:10px;margin-bottom:0;">
             <a id="downloadLink" class="dl-btn" download="rcapture-snapshot.png">Download Image</a>
+            <button id="mobileOcrBtn" class="hidden" type="button">Extract Text</button>
             <button id="clearSnapshotBtn" class="secondary" type="button">Clear Snapshot</button>
           </div>
+        </div>
+
+        <div id="mobileOcrPanel" class="ocr-panel hidden">
+          <h3>Extracted text</h3>
+          <p id="mobileOcrProgress" class="ocr-progress hidden"></p>
+          <pre id="mobileOcrOutput" class="ocr-output hidden"></pre>
         </div>
 
         <p id="mobileStatus" class="status"></p>
@@ -322,6 +363,17 @@
           <img id="imagePreview" alt="Uploaded receipt preview" class="hidden" />
           <span id="uploadPlaceholder">No image selected yet</span>
         </div>
+
+        <div id="desktopOcrControls" class="controls hidden" style="margin-top:10px;margin-bottom:0;">
+          <button id="desktopOcrBtn" type="button">Extract Text</button>
+        </div>
+
+        <div id="desktopOcrPanel" class="ocr-panel hidden">
+          <h3>Extracted text</h3>
+          <p id="desktopOcrProgress" class="ocr-progress hidden"></p>
+          <pre id="desktopOcrOutput" class="ocr-output hidden"></pre>
+        </div>
+
         <p id="desktopStatus" class="status"></p>
       </article>
     </section>
@@ -347,6 +399,14 @@
       const snapshotPreview = document.getElementById("snapshotPreview");
       const downloadLink = document.getElementById("downloadLink");
       const clearSnapshotBtn = document.getElementById("clearSnapshotBtn");
+      const mobileOcrBtn = document.getElementById("mobileOcrBtn");
+      const mobileOcrPanel = document.getElementById("mobileOcrPanel");
+      const mobileOcrProgress = document.getElementById("mobileOcrProgress");
+      const mobileOcrOutput = document.getElementById("mobileOcrOutput");
+      const desktopOcrControls = document.getElementById("desktopOcrControls");
+      const desktopOcrPanel = document.getElementById("desktopOcrPanel");
+      const desktopOcrProgress = document.getElementById("desktopOcrProgress");
+      const desktopOcrOutput = document.getElementById("desktopOcrOutput");
 
       const imageInput = document.getElementById("imageInput");
       const imagePreview = document.getElementById("imagePreview");
@@ -421,6 +481,9 @@
         snapshotPreview.src = dataUrl;
         downloadLink.href = dataUrl;
         snapshotSection.classList.remove("hidden");
+        mobileOcrBtn.classList.remove("hidden");
+        mobileOcrPanel.classList.add("hidden");
+        mobileOcrOutput.textContent = "";
         setStatus(mobileStatus, "Image captured! You can download it below.", "ok");
       }
 
@@ -530,6 +593,9 @@
           imagePreview.src = activePreviewUrl;
           imagePreview.classList.remove("hidden");
           uploadPlaceholder.classList.add("hidden");
+          desktopOcrControls.classList.remove("hidden");
+          desktopOcrPanel.classList.add("hidden");
+          desktopOcrOutput.textContent = "";
           setStatus(desktopStatus, "Image loaded successfully.", "ok");
         });
       }
@@ -542,7 +608,47 @@
         snapshotPreview.src = "";
         downloadLink.href = "";
         snapshotSection.classList.add("hidden");
+        mobileOcrBtn.classList.add("hidden");
+        mobileOcrPanel.classList.add("hidden");
+        mobileOcrOutput.textContent = "";
         setStatus(mobileStatus, "");
+      });
+
+      async function runOCR(imgEl, progressEl, outputEl, btn) {
+        btn.disabled = true;
+        progressEl.textContent = "Loading OCR engine\u2026";
+        progressEl.classList.remove("hidden");
+        outputEl.classList.add("hidden");
+        outputEl.textContent = "";
+        try {
+          const worker = await Tesseract.createWorker("eng", 1, {
+            logger: function (m) {
+              if (m.status === "recognizing text") {
+                progressEl.textContent = "Recognising\u2026 " + Math.round(m.progress * 100) + "%";
+              }
+            }
+          });
+          const result = await worker.recognize(imgEl);
+          await worker.terminate();
+          const text = result.data.text.trim();
+          outputEl.textContent = text || "No text detected in this image.";
+          outputEl.classList.remove("hidden");
+          progressEl.classList.add("hidden");
+        } catch (_) {
+          progressEl.textContent = "OCR failed. Check image quality and try again.";
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      mobileOcrBtn.addEventListener("click", function onMobileOcr() {
+        mobileOcrPanel.classList.remove("hidden");
+        runOCR(snapshotPreview, mobileOcrProgress, mobileOcrOutput, mobileOcrBtn);
+      });
+
+      desktopOcrBtn.addEventListener("click", function onDesktopOcr() {
+        desktopOcrPanel.classList.remove("hidden");
+        runOCR(imagePreview, desktopOcrProgress, desktopOcrOutput, desktopOcrBtn);
       });
 
       autoModeBtn.addEventListener("click", function onAutoMode() {
