@@ -223,6 +223,27 @@
       font-weight: 500;
     }
 
+    .dl-btn {
+      display: inline-flex;
+      align-items: center;
+      border: 0;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--accent), #0f8e67);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 130ms ease, filter 130ms ease;
+    }
+
+    .dl-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
     .hidden {
       display: none !important;
     }
@@ -263,6 +284,7 @@
 
         <div class="controls">
           <button id="enableMediaBtn" type="button">Start Live Scan</button>
+          <button id="captureBtn" class="hidden" type="button">Capture Image</button>
           <button id="stopMediaBtn" class="secondary hidden" type="button">Stop Scan</button>
         </div>
 
@@ -270,6 +292,21 @@
           <video id="cameraPreview" autoplay playsinline muted class="hidden"></video>
           <span id="cameraPlaceholder">Camera preview will appear here</span>
         </div>
+
+        <!-- Off-screen canvas used to snapshot the video frame -->
+        <canvas id="captureCanvas" class="hidden" aria-hidden="true"></canvas>
+
+        <div id="snapshotSection" class="hidden">
+          <p class="panel-text" style="margin-top:14px;margin-bottom:8px;">Captured image:</p>
+          <div class="media-box">
+            <img id="snapshotPreview" alt="Captured snapshot" />
+          </div>
+          <div class="controls" style="margin-top:10px;margin-bottom:0;">
+            <a id="downloadLink" class="dl-btn" download="rcapture-snapshot.png">Download Image</a>
+            <button id="clearSnapshotBtn" class="secondary" type="button">Clear Snapshot</button>
+          </div>
+        </div>
+
         <p id="mobileStatus" class="status"></p>
       </article>
 
@@ -300,10 +337,16 @@
       const uploadModeBtn = document.getElementById("uploadModeBtn");
 
       const enableMediaBtn = document.getElementById("enableMediaBtn");
+      const captureBtn = document.getElementById("captureBtn");
       const stopMediaBtn = document.getElementById("stopMediaBtn");
       const cameraPreview = document.getElementById("cameraPreview");
       const cameraPlaceholder = document.getElementById("cameraPlaceholder");
       const mobileStatus = document.getElementById("mobileStatus");
+      const captureCanvas = document.getElementById("captureCanvas");
+      const snapshotSection = document.getElementById("snapshotSection");
+      const snapshotPreview = document.getElementById("snapshotPreview");
+      const downloadLink = document.getElementById("downloadLink");
+      const clearSnapshotBtn = document.getElementById("clearSnapshotBtn");
 
       const imageInput = document.getElementById("imageInput");
       const imagePreview = document.getElementById("imagePreview");
@@ -364,7 +407,21 @@
         cameraPreview.srcObject = null;
         cameraPreview.classList.add("hidden");
         cameraPlaceholder.classList.remove("hidden");
+        captureBtn.classList.add("hidden");
         stopMediaBtn.classList.add("hidden");
+      }
+
+      function captureSnapshot() {
+        if (!activeStream) return;
+        captureCanvas.width = cameraPreview.videoWidth || 1280;
+        captureCanvas.height = cameraPreview.videoHeight || 720;
+        const ctx = captureCanvas.getContext("2d");
+        ctx.drawImage(cameraPreview, 0, 0, captureCanvas.width, captureCanvas.height);
+        const dataUrl = captureCanvas.toDataURL("image/png");
+        snapshotPreview.src = dataUrl;
+        downloadLink.href = dataUrl;
+        snapshotSection.classList.remove("hidden");
+        setStatus(mobileStatus, "Image captured! You can download it below.", "ok");
       }
 
       async function startMediaStream() {
@@ -386,6 +443,7 @@
           cameraPreview.srcObject = stream;
           cameraPreview.classList.remove("hidden");
           cameraPlaceholder.classList.add("hidden");
+          captureBtn.classList.remove("hidden");
           stopMediaBtn.classList.remove("hidden");
           setStatus(mobileStatus, "Camera and microphone are active.", "ok");
         } catch (error) {
@@ -477,6 +535,15 @@
       }
 
       enableMediaBtn.addEventListener("click", startMediaStream);
+
+      captureBtn.addEventListener("click", captureSnapshot);
+
+      clearSnapshotBtn.addEventListener("click", function onClearSnapshot() {
+        snapshotPreview.src = "";
+        downloadLink.href = "";
+        snapshotSection.classList.add("hidden");
+        setStatus(mobileStatus, "");
+      });
 
       autoModeBtn.addEventListener("click", function onAutoMode() {
         applyMode("auto");

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>rCapture Flyer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Patrick+Hand&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg1: #fefae0;
+      --bg2: #ffd6a5;
+      --ink: #2d2a24;
+      --muted: #5c564d;
+      --accent: #006d77;
+      --accent-2: #e76f51;
+      --card: rgba(255, 255, 255, 0.86);
+      --line: rgba(45, 42, 36, 0.14);
+      --shadow: 0 22px 44px rgba(57, 41, 22, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Nunito", "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 8% 15%, rgba(0, 109, 119, 0.18), transparent 35%),
+        radial-gradient(circle at 85% 5%, rgba(231, 111, 81, 0.2), transparent 42%),
+        linear-gradient(165deg, var(--bg1), var(--bg2));
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .flyer {
+      width: min(860px, 100%);
+      border-radius: 26px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      backdrop-filter: blur(8px);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: pop 450ms ease both;
+    }
+
+    @keyframes pop {
+      from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .hero {
+      padding: 26px 22px 16px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(0, 109, 119, 0.12);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 12px 0 8px;
+      font-size: clamp(1.8rem, 3.1vw, 2.8rem);
+      line-height: 1.03;
+    }
+
+    .tagline {
+      margin: 0;
+      color: var(--muted);
+      font-family: "Patrick Hand", cursive;
+      font-size: clamp(1.1rem, 2vw, 1.4rem);
+      letter-spacing: 0.02em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    .qr-card,
+    .steps {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.88);
+      padding: 16px;
+    }
+
+    .qr-wrap {
+      margin: 8px auto 10px;
+      width: min(280px, 100%);
+      aspect-ratio: 1 / 1;
+      border-radius: 14px;
+      border: 1px dashed var(--line);
+      background: #fff;
+      display: grid;
+      place-items: center;
+      padding: 14px;
+    }
+
+    .qr-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .scan-text {
+      margin: 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.94rem;
+    }
+
+    .steps h2,
+    .qr-card h2 {
+      margin: 0 0 10px;
+      font-size: 1.18rem;
+    }
+
+    .steps ol {
+      margin: 0;
+      padding-left: 20px;
+      display: grid;
+      gap: 10px;
+      color: var(--ink);
+      line-height: 1.4;
+    }
+
+    .steps p {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .repo-link {
+      display: inline-block;
+      margin-top: 10px;
+      color: var(--accent);
+      font-weight: 700;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 2px;
+      word-break: break-all;
+    }
+
+    .footer {
+      border-top: 1px dashed var(--line);
+      padding: 12px 20px 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 760px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding: 20px 16px 12px;
+      }
+
+      .grid {
+        padding: 14px;
+      }
+    }
+
+    @media print {
+      body {
+        background: #fff;
+        padding: 0;
+      }
+
+      .flyer {
+        width: 100%;
+        border-radius: 0;
+        border: 0;
+        box-shadow: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="flyer" role="main">
+    <header class="hero">
+      <span class="label">rCapture</span>
+      <h1>Scan this and try rCapture</h1>
+      <p class="tagline">Quick setup, zero fuss. Just point your camera and go.</p>
+    </header>
+
+    <section class="grid" aria-label="Flyer content">
+      <article class="qr-card">
+        <h2>Scan Me</h2>
+        <div class="qr-wrap">
+          <img
+            src="https://api.qrserver.com/v1/create-qr-code/?size=520x520&data=https%3A%2F%2Freceipt-image.vercel.app%2F"
+            alt="QR code linking to the rCapture app"
+          />
+        </div>
+        <p class="scan-text">Open your phone camera and point it at the code.</p>
+      </article>
+
+      <article class="steps">
+        <h2>How to use it</h2>
+        <ol>
+          <li>Scan the QR code with your phone camera.</li>
+          <li>Open the link and launch rCapture in your browser.</li>
+          <li>Use <strong>Camera mode</strong> on mobile for live capture with mic permission.</li>
+          <li>Use <strong>Upload mode</strong> on desktop to pick an image file and preview it.</li>
+          <li>Switch modes anytime with Auto Detect / Use Camera / Use Upload.</li>
+        </ol>
+
+        <p>Direct link if needed:</p>
+        <a class="repo-link" href="https://receipt-image.vercel.app/" target="_blank" rel="noopener noreferrer">
+          https://receipt-image.vercel.app/
+        </a>
+      </article>
+    </section>
+
+    <footer class="footer">
+      Tip: for camera and microphone access, run on localhost or HTTPS.
+    </footer>
+  </main>
+</body>
+</html>
